@@ -93,3 +93,83 @@ document.addEventListener('DOMContentLoaded', () => {
             link: "https://www.figma.com/proto/XA1tRlvTVWtAy9kTYeB5Zo/ui-ux?node-id=0-1&t=rqrfhIW8XCs0rvbD-1"
         }
     ];
+    const projectContainer = document.querySelector('.projects-grid');
+    
+    if (projectContainer) {
+        projectContainer.innerHTML = ''; 
+        
+        projects.forEach(project => {
+            const tagsHtml = project.tech.map(tech => <span class="tech-item">${tech}</span>).join('');
+            
+            let imageHtml = '';
+            
+            // Image preview logic
+            if (project.link && project.image) { 
+                imageHtml = `<div class="project-image-container">
+                    <img src="${project.image}" alt="Image for ${project.title}" class="project-img">
+                </div>`;
+            }
+
+            // Link logic
+            let projectLinkHtml = '';
+            if (project.link) {
+                // Standard external link
+                projectLinkHtml = <a href="${project.link}" class="project-link" target="_blank">View Project &rarr;</a>;
+            } else if (project.images && !project.link) {
+                // Modal trigger logic (for projects that use the popup)
+                const imagesString = JSON.stringify(project.images).replace(/"/g, "'"); 
+                const titleString = JSON.stringify(project.title);
+                const descriptionString = JSON.stringify(project.description);
+                
+                projectLinkHtml = `
+                    <a href="#" class="project-link modal-trigger" 
+                        onclick="event.preventDefault(); openProjectModal(${titleString}, ${imagesString}, ${descriptionString})">
+                        View Project &rarr;
+                    </a>
+                `;
+            }
+
+            const cardHtml = `
+                <article class="project-card">
+                    ${imageHtml}
+                    <h3>${project.title}</h3>
+                    <p>${project.description}</p>
+                    <div class="tech-stack">
+                        ${tagsHtml}
+                    </div>
+                    ${projectLinkHtml}
+                </article>
+            `;
+            projectContainer.innerHTML += cardHtml;
+        });
+    }
+
+    // --- Feature 5: Form Submission logic REMOVED ---
+    
+    // --- Feature 4: Active Link Highlighting ---
+    const sections = document.querySelectorAll('section');
+
+    const observerOptions = {
+        root: null, 
+        rootMargin: "0px",
+        threshold: 0.5 
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const id = entry.target.getAttribute('id');
+            const activeLink = document.querySelector(.nav-links a[href="#${id}"]);
+
+            if (entry.isIntersecting) {
+                navItems.forEach(a => a.classList.remove('link-active')); 
+                if (activeLink) {
+                    activeLink.classList.add('link-active');
+                }
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+});
